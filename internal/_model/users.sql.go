@@ -3,7 +3,7 @@
 //   sqlc v1.20.0
 // source: users.sql
 
-package data
+package _model
 
 import (
 	"context"
@@ -41,41 +41,6 @@ WHERE email = $1
 func (q *Queries) DeleteUser(ctx context.Context, email string) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, email)
 	return err
-}
-
-const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, email, password_hash, name, created_at, avatar_url FROM users
-ORDER BY email
-`
-
-func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getAllUsers)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []User
-	for rows.Next() {
-		var i User
-		if err := rows.Scan(
-			&i.ID,
-			&i.Email,
-			&i.PasswordHash,
-			&i.Name,
-			&i.CreatedAt,
-			&i.AvatarUrl,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one

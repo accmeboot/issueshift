@@ -1,6 +1,8 @@
 # Issueshift
 Agile board web app
 
+## An attempt to implement hexagonal architecture
+
 ## Development 
 
 ### Start dev server

@@ -2,10 +2,6 @@
 SELECT * FROM users
 WHERE email = $1 LIMIT 1;
 
--- name: GetAllUsers :many
-SELECT * FROM users
-ORDER BY email;
-
 -- name: CreateUser :exec
 INSERT INTO users (
     email, name, password_hash, avatar_url
