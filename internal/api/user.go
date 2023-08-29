@@ -17,8 +17,8 @@ type UserHandler struct {
 }
 
 type SignInUserDTO struct {
-	Email    string `json:"email" validate:"required"`
-	Password string `json:"password" validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,password"`
 }
 
 type RegisterUserDTO struct {

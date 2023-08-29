@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/accmeboot/issueshift/internal/domain"
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -31,14 +32,24 @@ func (v *Validator) Validate(s any) bool {
 		for _, t := range tags {
 			switch t {
 			case "required":
-				err := required(val.Field(i).String(), field.Name)
+				err := required(val.Field(i).String(), strings.ToLower(field.Name))
 				if err != nil {
-					v.Errors[strings.ToLower(field.Name)] = required(val.Field(i).String(), strings.ToLower(field.Name))
+					v.Errors[strings.ToLower(field.Name)] = err
+				}
+			case "password":
+				err := password(val.Field(i).String())
+				if err != nil {
+					v.Errors[strings.ToLower(field.Name)] = err
+				}
+			case "email":
+				err := email(val.Field(i).String())
+				if err != nil {
+					v.Errors[strings.ToLower(field.Name)] = err
 				}
 			}
 		}
 
-		// If filed is from embedded struct
+		// If field is from embedded struct
 		if field.Anonymous {
 			v.Validate(val.Field(i).Interface())
 		}
@@ -47,9 +58,32 @@ func (v *Validator) Validate(s any) bool {
 	return len(v.Errors) == 0
 }
 
-func required(value string, name string) *string {
+func required(value, name string) *string {
 	if value == "" {
 		message := fmt.Sprintf("field %s is required", name)
+		return &message
+	}
+
+	return nil
+}
+
+func email(value string) *string {
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+
+	if !emailRegex.MatchString(value) {
+		message := fmt.Sprint("email is invalid")
+		return &message
+	}
+
+	return nil
+}
+
+func password(value string) *string {
+	// TODO: patterns like ?=. don't work with go, but you can put each check into different regex
+	//passwordRegex := regexp.MustCompile(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$`)
+
+	if len(value) < 8 {
+		message := fmt.Sprint("password is too weak")
 		return &message
 	}
 
