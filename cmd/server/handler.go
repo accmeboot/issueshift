@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"github.com/accmeboot/issueshift/internal/api"
-	"github.com/accmeboot/issueshift/internal/api/middleware"
 	"github.com/accmeboot/issueshift/internal/factory"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
@@ -24,7 +23,6 @@ func NewHandler(db *sql.DB) *Handler {
 	// Common middlewares
 	mux.Use(chiMiddleware.Recoverer)
 	mux.Use(chiMiddleware.Logger)
-	mux.Use(middleware.ErrorHandler)
 
 	return &Handler{
 		User: userFactory.Handler,
@@ -33,6 +31,6 @@ func NewHandler(db *sql.DB) *Handler {
 }
 
 func (h *Handler) MapUser() {
-	h.Mux.Get("/v1/users", h.User.GetUser)
-	h.Mux.Post("/v1/users", h.User.RegisterUser)
+	h.Mux.Post("/v1/users/signin", h.User.SignInUser)
+	h.Mux.Post("/v1/users/signup", h.User.RegisterUser)
 }

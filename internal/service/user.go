@@ -16,6 +16,6 @@ func (s *UserService) GetUserByEmail(email string) (*domain.User, error) {
 	return s.repo.GetByEmail(email)
 }
 
-func (s *UserService) CreateUser(email, name, avatarUrl string, passwordHash []byte) error {
+func (s *UserService) CreateUser(email, name string, avatarUrl *string, passwordHash []byte) error {
 	return s.repo.CreateUser(email, name, avatarUrl, passwordHash)
 }

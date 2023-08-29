@@ -8,6 +8,7 @@ package _model
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 const createUser = `-- name: CreateUser :exec
@@ -55,6 +56,32 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.ID,
 		&i.Email,
 		&i.PasswordHash,
+		&i.Name,
+		&i.CreatedAt,
+		&i.AvatarUrl,
+	)
+	return i, err
+}
+
+const getUserById = `-- name: GetUserById :one
+SELECT id, email, name, created_at, avatar_url FROM users
+WHERE id = $1 LIMIT 1
+`
+
+type GetUserByIdRow struct {
+	ID        int64
+	Email     string
+	Name      string
+	CreatedAt time.Time
+	AvatarUrl sql.NullString
+}
+
+func (q *Queries) GetUserById(ctx context.Context, id int64) (GetUserByIdRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserById, id)
+	var i GetUserByIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
 		&i.Name,
 		&i.CreatedAt,
 		&i.AvatarUrl,

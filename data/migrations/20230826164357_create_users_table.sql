@@ -2,10 +2,10 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS users (
     id bigserial PRIMARY KEY,
-    email citext NOT NULL,
+    email citext UNIQUE NOT NULL,
     password_hash bytea NOT NULL,
     name text NOT NULL,
-    created_at timestamp DEFAULT now(),
+    created_at timestamp NOT NULL DEFAULT now(),
     avatar_url text
 );
 -- +goose StatementEnd

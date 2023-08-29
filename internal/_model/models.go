@@ -6,6 +6,7 @@ package _model
 
 import (
 	"database/sql"
+	"time"
 )
 
 type User struct {
@@ -13,6 +14,6 @@ type User struct {
 	Email        string
 	PasswordHash []byte
 	Name         string
-	CreatedAt    sql.NullTime
+	CreatedAt    time.Time
 	AvatarUrl    sql.NullString
 }

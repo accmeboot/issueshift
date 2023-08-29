@@ -4,18 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/accmeboot/issueshift/internal/domain"
 	"io"
 	"log"
 	"net/http"
 	"strings"
 )
 
-type Envelope map[string]any
-
-func WriteJSON(w http.ResponseWriter, r *http.Request, status int, data Envelope) {
+func WriteJSON(w http.ResponseWriter, status int, data domain.Envelope) {
 	info, err := json.Marshal(data)
 	if err != nil {
-		PassToContext(r, err)
 		return
 	}
 

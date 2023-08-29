@@ -8,5 +8,5 @@ type User struct {
 
 type UserRepository interface {
 	GetByEmail(email string) (*User, error)
-	CreateUser(email, name, avatarUrl string, passwordHash []byte) error
+	CreateUser(email, name string, avatarUrl *string, passwordHash []byte) error
 }

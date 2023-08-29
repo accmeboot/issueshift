@@ -1,7 +1,10 @@
 package domain
 
-import "errors"
+type Envelope map[string]any
 
-var ErrNoRecord = errors.New("the requested resource could not be found")
-var ErrEditConflict = errors.New("edit conflict")
-var ErrServer = errors.New("the server encountered a problem and could not process your request")
+type ErrNoRecord error
+type ErrAlreadyExists error
+type ErrEditConflict error
+type ErrServer error
+type ErrInvalidCredentials error
+type ErrBadlyFormattedJson error
