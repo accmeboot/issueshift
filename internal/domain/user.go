@@ -10,15 +10,15 @@ type User struct {
 	PasswordHash []byte
 	Name         string
 	CreatedAt    time.Time
-	Avatar       *string
+	AvatarID     *int64
 }
 
 type UserRepository interface {
 	GetByEmail(email string) (*User, error)
-	CreateUser(email, name string, avatarUrl *string, passwordHash []byte) error
+	CreateUser(email, name string, avatarId *int64, passwordHash []byte) error
 }
 
 type UserService interface {
 	GetUserByCredentials(email, password string) (*User, error)
-	CreateUser(email, name string, avatarUrl *string, passwordHash []byte) error
+	CreateUser(email, name, password string, avatarId *int64) error
 }

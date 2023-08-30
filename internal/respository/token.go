@@ -26,7 +26,7 @@ func NewTokenRepository(db *sql.DB) *TokenRepository {
 var _ domain.TokenRepository = &TokenRepository{}
 
 func (t TokenRepository) GetUserFromToken(token []byte) (*domain.User, error) {
-	query := `SELECT users.id, users.email, users.name, users.password_hash, users.created_at, users.avatar
+	query := `SELECT users.id, users.email, users.name, users.password_hash, users.created_at, users.avatar_id
 			  FROM users
 			  INNER JOIN tokens
 			  ON users.id = tokens.user_id
@@ -37,7 +37,7 @@ func (t TokenRepository) GetUserFromToken(token []byte) (*domain.User, error) {
 	defer cancel()
 
 	var user domain.User
-	var avatarUrl sql.NullString
+	var avatarUrl sql.NullInt64
 
 	err := t.DB.QueryRowContext(ctx, query, token, time.Now()).Scan(
 		&user.ID,
@@ -52,7 +52,7 @@ func (t TokenRepository) GetUserFromToken(token []byte) (*domain.User, error) {
 	}
 
 	if avatarUrl.Valid {
-		user.Avatar = &avatarUrl.String
+		user.AvatarID = &avatarUrl.Int64
 	}
 
 	return &user, nil

@@ -5,7 +5,6 @@ import (
 	"github.com/accmeboot/issueshift/internal/api/response"
 	"github.com/accmeboot/issueshift/internal/api/validation"
 	"github.com/accmeboot/issueshift/internal/domain"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 )
@@ -32,13 +31,13 @@ func NewUserHandler(us domain.UserService, ts domain.TokenService) *UserHandler 
 func (uh *UserHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 	var DTO SignInUserDTO
 
-	validator := validation.NewValidator()
-
 	err := response.ReadJSON(w, r, &DTO)
 	if err != nil {
 		response.WriteError(w, http.StatusUnprocessableEntity, domain.Envelope{"error": "failed to parse body"}, err)
 		return
 	}
+
+	validator := validation.NewValidator()
 
 	if ok := validator.Validate(DTO); !ok {
 		log.Println(validator.Errors)
@@ -76,7 +75,6 @@ func (uh *UserHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 
 func (uh *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var DTO RegisterUserDTO
-	validator := validation.NewValidator()
 
 	err := response.ReadJSON(w, r, &DTO)
 	if err != nil {
@@ -84,18 +82,14 @@ func (uh *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	validator := validation.NewValidator()
 	if ok := validator.Validate(DTO); !ok {
 		response.WriteError(w, http.StatusBadRequest, domain.Envelope{"validation_errors": validator.Errors}, nil)
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(DTO.Password), 12)
-	if err != nil {
-		response.WriteError(w, http.StatusInternalServerError, domain.Envelope{"error": "internal server error"}, err)
-		return
-	}
 	// TODO: Add avatar_url logic
-	err = uh.userService.CreateUser(DTO.Email, DTO.Name, nil, hash)
+	err = uh.userService.CreateUser(DTO.Email, DTO.Name, DTO.Password, nil)
 	if err != nil {
 		var alreadyExists domain.ErrAlreadyExists
 		switch {

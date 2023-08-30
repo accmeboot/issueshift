@@ -28,6 +28,11 @@ func (s *UserService) GetUserByCredentials(email, password string) (*domain.User
 	return s.repo.GetByEmail(email)
 }
 
-func (s *UserService) CreateUser(email, name string, avatarUrl *string, passwordHash []byte) error {
-	return s.repo.CreateUser(email, name, avatarUrl, passwordHash)
+func (s *UserService) CreateUser(email, name, password string, avatarId *int64) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return domain.ErrServer(err)
+	}
+
+	return s.repo.CreateUser(email, name, avatarId, hash)
 }

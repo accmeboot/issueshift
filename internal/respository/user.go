@@ -19,7 +19,7 @@ type User struct {
 	PasswordHash []byte
 	Name         string
 	CreatedAt    time.Time
-	Avatar       sql.NullString
+	AvatarID     sql.NullInt64
 }
 
 func NewUserRepository(db *sql.DB) *UserRepository {
@@ -29,7 +29,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 var _ domain.UserRepository = &UserRepository{}
 
 func (ur *UserRepository) GetByEmail(email string) (*domain.User, error) {
-	query := `SELECT id, email, name, password_hash, created_at, avatar FROM users WHERE email = $1 LIMIT 1`
+	query := `SELECT id, email, name, password_hash, created_at, avatar_id FROM users WHERE email = $1 LIMIT 1`
 	var user User
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -41,7 +41,7 @@ func (ur *UserRepository) GetByEmail(email string) (*domain.User, error) {
 		&user.Name,
 		&user.PasswordHash,
 		&user.CreatedAt,
-		&user.Avatar,
+		&user.AvatarID,
 	)
 
 	if err != nil {
@@ -53,10 +53,10 @@ func (ur *UserRepository) GetByEmail(email string) (*domain.User, error) {
 		}
 	}
 
-	var avatarUrl *string = nil
+	var avatarId *int64 = nil
 
-	if user.Avatar.Valid {
-		avatarUrl = &user.Avatar.String
+	if user.AvatarID.Valid {
+		avatarId = &user.AvatarID.Int64
 	}
 
 	return &domain.User{
@@ -65,24 +65,24 @@ func (ur *UserRepository) GetByEmail(email string) (*domain.User, error) {
 		Name:         user.Name,
 		PasswordHash: user.PasswordHash,
 		CreatedAt:    user.CreatedAt,
-		Avatar:       avatarUrl,
+		AvatarID:     avatarId,
 	}, nil
 }
 
-func (ur *UserRepository) CreateUser(email, name string, avatarUrl *string, passwordHash []byte) error {
-	query := `INSERT INTO users (email, name, avatar, password_hash) VALUES ($1, $2, $3, $4)`
+func (ur *UserRepository) CreateUser(email, name string, avatarId *int64, passwordHash []byte) error {
+	query := `INSERT INTO users (email, name, avatar_id, password_hash) VALUES ($1, $2, $3, $4)`
 
-	url := sql.NullString{Valid: false}
+	url := sql.NullInt64{Valid: false}
 
-	if avatarUrl != nil {
-		url.String = *avatarUrl
+	if avatarId != nil {
+		url.Int64 = *avatarId
 		url.Valid = true
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	_, err := ur.DB.ExecContext(ctx, query, email, name, avatarUrl, passwordHash)
+	_, err := ur.DB.ExecContext(ctx, query, email, name, avatarId, passwordHash)
 
 	if pqErr, ok := err.(*pq.Error); ok {
 		switch pqErr.Code {
