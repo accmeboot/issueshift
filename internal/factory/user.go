@@ -15,7 +15,9 @@ func NewUserFactory(db *sql.DB) *UserFactory {
 	userRepository := respository.NewUserRepository(db)
 	userService := service.NewUserService(userRepository)
 
+	tokenFactory := NewTokenFactory(db)
+
 	return &UserFactory{
-		Handler: api.NewUserHandler(userService),
+		Handler: api.NewUserHandler(userService, tokenFactory.TokenService),
 	}
 }

@@ -19,13 +19,17 @@ type User struct {
 	PasswordHash []byte
 	Name         string
 	CreatedAt    time.Time
-	AvatarUrl    sql.NullString
+	Avatar       sql.NullString
+}
+
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{DB: db}
 }
 
 var _ domain.UserRepository = &UserRepository{}
 
 func (ur *UserRepository) GetByEmail(email string) (*domain.User, error) {
-	query := `SELECT id, email, name, password_hash, created_at, avatar_url FROM users WHERE email = $1 LIMIT 1`
+	query := `SELECT id, email, name, password_hash, created_at, avatar FROM users WHERE email = $1 LIMIT 1`
 	var user User
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -37,7 +41,7 @@ func (ur *UserRepository) GetByEmail(email string) (*domain.User, error) {
 		&user.Name,
 		&user.PasswordHash,
 		&user.CreatedAt,
-		&user.AvatarUrl,
+		&user.Avatar,
 	)
 
 	if err != nil {
@@ -51,8 +55,8 @@ func (ur *UserRepository) GetByEmail(email string) (*domain.User, error) {
 
 	var avatarUrl *string = nil
 
-	if user.AvatarUrl.Valid {
-		avatarUrl = &user.AvatarUrl.String
+	if user.Avatar.Valid {
+		avatarUrl = &user.Avatar.String
 	}
 
 	return &domain.User{
@@ -61,12 +65,12 @@ func (ur *UserRepository) GetByEmail(email string) (*domain.User, error) {
 		Name:         user.Name,
 		PasswordHash: user.PasswordHash,
 		CreatedAt:    user.CreatedAt,
-		AvatarUrl:    avatarUrl,
+		Avatar:       avatarUrl,
 	}, nil
 }
 
 func (ur *UserRepository) CreateUser(email, name string, avatarUrl *string, passwordHash []byte) error {
-	query := `INSERT INTO users (email, name, avatar_url, password_hash) VALUES ($1, $2, $3, $4)`
+	query := `INSERT INTO users (email, name, avatar, password_hash) VALUES ($1, $2, $3, $4)`
 
 	url := sql.NullString{Valid: false}
 
@@ -90,8 +94,4 @@ func (ur *UserRepository) CreateUser(email, name string, avatarUrl *string, pass
 	}
 
 	return domain.ErrServer(err)
-}
-
-func NewUserRepository(db *sql.DB) *UserRepository {
-	return &UserRepository{DB: db}
 }

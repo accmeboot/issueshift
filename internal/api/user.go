@@ -2,18 +2,17 @@ package api
 
 import (
 	"errors"
+	"github.com/accmeboot/issueshift/internal/api/response"
 	"github.com/accmeboot/issueshift/internal/api/validation"
+	"github.com/accmeboot/issueshift/internal/domain"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
-
-	"github.com/accmeboot/issueshift/internal/api/response"
-	"github.com/accmeboot/issueshift/internal/domain"
-	"github.com/accmeboot/issueshift/internal/service"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserHandler struct {
-	userService *service.UserService
+	userService  domain.UserService
+	tokenService domain.TokenService
 }
 
 type SignInUserDTO struct {
@@ -22,12 +21,12 @@ type SignInUserDTO struct {
 }
 
 type RegisterUserDTO struct {
-	SignInUserDTO
 	Name string `json:"name" validate:"required"`
+	SignInUserDTO
 }
 
-func NewUserHandler(us *service.UserService) *UserHandler {
-	return &UserHandler{userService: us}
+func NewUserHandler(us domain.UserService, ts domain.TokenService) *UserHandler {
+	return &UserHandler{userService: us, tokenService: ts}
 }
 
 func (uh *UserHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
@@ -47,11 +46,11 @@ func (uh *UserHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := uh.userService.GetUserByEmail(DTO.Email)
+	user, err := uh.userService.GetUserByCredentials(DTO.Email, DTO.Password)
 	if err != nil {
-		var noRecord domain.ErrNoRecord
+		var invalidCredentials domain.ErrInvalidCredentials
 		switch {
-		case errors.As(err, &noRecord):
+		case errors.As(err, &invalidCredentials):
 			response.WriteError(w, http.StatusNotFound, domain.Envelope{"error": "invalid credentials"}, err)
 		default:
 			response.WriteError(w, http.StatusInternalServerError, domain.Envelope{"error": "internal server error"}, err)
@@ -59,16 +58,20 @@ func (uh *UserHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(DTO.Password))
+	token, err := uh.tokenService.Create(user.ID)
+
 	if err != nil {
-		response.WriteError(w, http.StatusNotFound, domain.Envelope{"error": "invalid credentials"}, err)
+		response.WriteError(w, http.StatusInternalServerError, domain.Envelope{"error": "internal server error"}, err)
 		return
 	}
 
-	// TODO: create token and save it to db
-	mockToken := []byte("token string")
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    *token,
+		HttpOnly: true,
+	})
 
-	response.WriteJSON(w, http.StatusOK, domain.Envelope{"token": mockToken})
+	response.WriteJSON(w, http.StatusOK, domain.Envelope{"token": token})
 }
 
 func (uh *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {

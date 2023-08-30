@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash bytea NOT NULL,
     name text NOT NULL,
     created_at timestamp NOT NULL DEFAULT now(),
-    avatar_url text
+    avatar_id bigint
 );
 -- +goose StatementEnd
 

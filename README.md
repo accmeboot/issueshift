@@ -26,7 +26,6 @@ make migrations/down
 ## Stack
 - https://github.com/go-chi/chi
 - https://github.com/pressly/goose
-- https://github.com/sqlc-dev/sqlc
 
 ## Todo:
 - [ ] Overall api architecture
