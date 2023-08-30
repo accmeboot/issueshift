@@ -1,9 +1,0 @@
-version: "2"
-sql:
-  - engine: "postgresql"
-    queries: "./data/queries/"
-    schema: "./data/migrations/"
-    gen:
-      go:
-        package: "_model"
-        out: "./internal/_model"

@@ -33,17 +33,17 @@ func (v *Validator) Validate(s any) bool {
 			switch t {
 			case "required":
 				err := required(val.Field(i).String(), strings.ToLower(field.Name))
-				if err != nil {
+				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && err != nil {
 					v.Errors[strings.ToLower(field.Name)] = err
 				}
 			case "password":
 				err := password(val.Field(i).String())
-				if err != nil {
+				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && err != nil {
 					v.Errors[strings.ToLower(field.Name)] = err
 				}
 			case "email":
 				err := email(val.Field(i).String())
-				if err != nil {
+				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && err != nil {
 					v.Errors[strings.ToLower(field.Name)] = err
 				}
 			}

@@ -1,9 +1,16 @@
 package domain
 
-import "github.com/accmeboot/issueshift/internal/_model"
+import (
+	"time"
+)
 
 type User struct {
-	_model.User
+	ID           int64
+	Email        string
+	PasswordHash []byte
+	Name         string
+	CreatedAt    time.Time
+	AvatarUrl    *string
 }
 
 type UserRepository interface {

@@ -5,7 +5,7 @@ import (
 	"github.com/accmeboot/issueshift/internal/api"
 	"github.com/accmeboot/issueshift/internal/factory"
 	"github.com/go-chi/chi/v5"
-	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type Handler struct {
@@ -21,8 +21,8 @@ func NewHandler(db *sql.DB) *Handler {
 	mux := chi.NewRouter()
 
 	// Common middlewares
-	mux.Use(chiMiddleware.Recoverer)
-	mux.Use(chiMiddleware.Logger)
+	mux.Use(middleware.Recoverer)
+	mux.Use(middleware.Logger)
 
 	return &Handler{
 		User: userFactory.Handler,

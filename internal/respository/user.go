@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/accmeboot/issueshift/internal/_model"
 	"github.com/accmeboot/issueshift/internal/domain"
 	"github.com/lib/pq"
 	"time"
@@ -14,15 +13,33 @@ type UserRepository struct {
 	DB *sql.DB
 }
 
+type User struct {
+	ID           int64
+	Email        string
+	PasswordHash []byte
+	Name         string
+	CreatedAt    time.Time
+	AvatarUrl    sql.NullString
+}
+
 var _ domain.UserRepository = &UserRepository{}
 
 func (ur *UserRepository) GetByEmail(email string) (*domain.User, error) {
-	queries := _model.New(ur.DB)
+	query := `SELECT id, email, name, password_hash, created_at, avatar_url FROM users WHERE email = $1 LIMIT 1`
+	var user User
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	user, err := queries.GetUserByEmail(ctx, email)
+	err := ur.DB.QueryRowContext(ctx, query, email).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Name,
+		&user.PasswordHash,
+		&user.CreatedAt,
+		&user.AvatarUrl,
+	)
+
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -32,11 +49,25 @@ func (ur *UserRepository) GetByEmail(email string) (*domain.User, error) {
 		}
 	}
 
-	return &domain.User{User: user}, nil
+	var avatarUrl *string = nil
+
+	if user.AvatarUrl.Valid {
+		avatarUrl = &user.AvatarUrl.String
+	}
+
+	return &domain.User{
+		ID:           user.ID,
+		Email:        user.Email,
+		Name:         user.Name,
+		PasswordHash: user.PasswordHash,
+		CreatedAt:    user.CreatedAt,
+		AvatarUrl:    avatarUrl,
+	}, nil
 }
 
 func (ur *UserRepository) CreateUser(email, name string, avatarUrl *string, passwordHash []byte) error {
-	queries := _model.New(ur.DB)
+	query := `INSERT INTO users (email, name, avatar_url, password_hash) VALUES ($1, $2, $3, $4)`
+
 	url := sql.NullString{Valid: false}
 
 	if avatarUrl != nil {
@@ -47,12 +78,7 @@ func (ur *UserRepository) CreateUser(email, name string, avatarUrl *string, pass
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := queries.CreateUser(ctx, _model.CreateUserParams{
-		Email:        email,
-		Name:         name,
-		PasswordHash: passwordHash,
-		AvatarUrl:    url,
-	})
+	_, err := ur.DB.ExecContext(ctx, query, email, name, avatarUrl, passwordHash)
 
 	if pqErr, ok := err.(*pq.Error); ok {
 		switch pqErr.Code {
