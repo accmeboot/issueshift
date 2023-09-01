@@ -20,7 +20,8 @@ type SignInUserDTO struct {
 }
 
 type RegisterUserDTO struct {
-	Name string `json:"name" validate:"required"`
+	Name     string `json:"name" validate:"required"`
+	AvatarID int64  `json:"avatar_id"`
 	SignInUserDTO
 }
 
@@ -68,6 +69,7 @@ func (uh *UserHandler) SignInUser(w http.ResponseWriter, r *http.Request) {
 		Name:     "Bearer",
 		Value:    *token,
 		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
 	})
 
 	response.WriteJSON(w, http.StatusOK, domain.Envelope{"token": token})
@@ -88,8 +90,7 @@ func (uh *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Add avatar_url logic
-	err = uh.userService.CreateUser(DTO.Email, DTO.Name, DTO.Password, nil)
+	err = uh.userService.CreateUser(DTO.Email, DTO.Name, DTO.Password, &DTO.AvatarID)
 	if err != nil {
 		var alreadyExists domain.ErrAlreadyExists
 		switch {

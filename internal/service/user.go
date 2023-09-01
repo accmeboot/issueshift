@@ -20,6 +20,10 @@ func NewUserService(r domain.UserRepository) *UserService {
 func (s *UserService) GetUserByCredentials(email, password string) (*domain.User, error) {
 	user, err := s.repo.GetByEmail(email)
 
+	if err != nil {
+		return nil, domain.ErrInvalidCredentials(err)
+	}
+
 	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(password))
 	if err != nil {
 		return nil, domain.ErrInvalidCredentials(err)

@@ -1,17 +1,19 @@
 package domain
 
+import "mime/multipart"
+
 type Image struct {
 	ID        int64
 	Name      string
-	ImageData string
+	ImageData []byte
 }
 
 type ImageService interface {
-	Create() (int64, error)
+	Create(file *multipart.File, fileName string) (int64, error)
 	Get(id int64) (*Image, error)
 }
 
 type ImageRepository interface {
-	Create() (int64, error)
-	Get(id int64) (*Image, error)
+	Create(base64File, fileName string) (int64, error)
+	Get(id int64) (*string, *string, error)
 }

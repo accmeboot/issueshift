@@ -16,7 +16,9 @@ func main() {
 
 	handler := NewHandler(db)
 
+	handler.MapFrontend()
 	handler.MapUser()
+	handler.MapImage()
 
 	server := http.Server{
 		Addr:         *cfg.ADDR,
