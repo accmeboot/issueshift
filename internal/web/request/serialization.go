@@ -1,28 +1,13 @@
-package response
+package request
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/accmeboot/issueshift/internal/domain"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
-
-func WriteJSON(w http.ResponseWriter, status int, data domain.Envelope) {
-	info, err := json.Marshal(data)
-	if err != nil {
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if _, err = w.Write(info); err != nil {
-		log.Printf("error processing response json: %s\n", err)
-	}
-}
 
 func ReadJSON(w http.ResponseWriter, r *http.Request, target any) error {
 	maxBytes := 1_048_576 // 1mb

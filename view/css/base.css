@@ -1,0 +1,12 @@
+@import "nav.css";
+@import "signin.css";
+
+.app {
+    padding: 0 2rem;
+}
+
+@media screen and (max-width: 480px) {
+    .app {
+        padding: 0;
+    }
+}

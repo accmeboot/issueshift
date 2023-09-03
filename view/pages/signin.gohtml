@@ -1,0 +1,33 @@
+{{define "title"}}Sign In{{end}}
+{{define "main"}}
+    <section>
+        <article class="container signin-card">
+            <form hx-post='/signin' hx-ext='json-enc' class='signin-form'>
+                {{block "signin_form" .}}
+                    <h3>Sign In</h3>
+
+                    {{with .notFound}}
+                        <p class='signin-error'>{{ . }}</p>
+                    {{end}}
+
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Email address" required>
+                    {{with .email}}
+                        <i class='signin-error'>{{ . }}</i>
+                    {{end}}
+
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="At least 8 characters long" required>
+                    {{with .password}}
+                        <i class='signin-error'>{{ . }}</i>
+                    {{end}}
+
+                    <footer class="signin-action">
+                        <button type="submit">Submit</button>
+                    </footer>
+                {{end}}
+            </form>
+        </article>
+
+    </section>
+{{end}}

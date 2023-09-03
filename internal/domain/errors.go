@@ -1,5 +1,9 @@
 package domain
 
+type errKey string
+
+var ErrKey = errKey("appError")
+
 type Envelope map[string]any
 
 type ErrNoRecord error

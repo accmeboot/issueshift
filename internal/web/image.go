@@ -1,25 +1,17 @@
-package api
+package web
 
 import (
 	"errors"
 	"fmt"
-	"github.com/accmeboot/issueshift/internal/api/response"
 	"github.com/accmeboot/issueshift/internal/domain"
+	"github.com/accmeboot/issueshift/internal/web/response"
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
 	"strconv"
 )
 
-type ImageHandler struct {
-	imageService domain.ImageService
-}
-
-func NewImageHandler(is domain.ImageService) *ImageHandler {
-	return &ImageHandler{imageService: is}
-}
-
-func (ih *ImageHandler) GetImage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetImage(w http.ResponseWriter, r *http.Request) {
 	rawId := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(rawId, 16, 64)
 	if err != nil {
@@ -27,7 +19,7 @@ func (ih *ImageHandler) GetImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	image, err := ih.imageService.Get(id)
+	image, err := h.ImageService.Get(id)
 	if err != nil {
 		var noRecord *domain.ErrNoRecord
 		switch {
@@ -49,7 +41,7 @@ func (ih *ImageHandler) GetImage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (ih *ImageHandler) CreateImage(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateImage(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, domain.Envelope{"error": "file is too big"}, err)
@@ -68,7 +60,7 @@ func (ih *ImageHandler) CreateImage(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	id, err := ih.imageService.Create(&file, header.Filename)
+	id, err := h.ImageService.Create(&file, header.Filename)
 	if err != nil {
 		response.WriteError(w, http.StatusInternalServerError, domain.Envelope{"error": "internal server error"}, err)
 		return

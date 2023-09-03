@@ -14,15 +14,13 @@ func main() {
 		panic(err)
 	}
 
-	handler := NewHandler(db)
+	router := NewRouter(db)
 
-	handler.MapFrontend()
-	handler.MapUser()
-	handler.MapImage()
+	router.MapRoutes()
 
 	server := http.Server{
 		Addr:         *cfg.ADDR,
-		Handler:      handler.Mux,
+		Handler:      router.Mux,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
