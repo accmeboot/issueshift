@@ -13,6 +13,10 @@ type User struct {
 	AvatarID     *int64
 }
 
+type userKey string
+
+const UserKey = userKey("UserKey")
+
 type UserRepository interface {
 	GetByEmail(email string) (*User, error)
 	CreateUser(email, name string, avatarId *int64, passwordHash []byte) error

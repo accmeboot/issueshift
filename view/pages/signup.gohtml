@@ -1,10 +1,10 @@
-{{define "title"}}Sign In{{end}}
+{{define "title"}}Sign Up{{end}}
 {{define "main"}}
     <section>
         <article class="container auth-card">
-            <form hx-post='/signin' hx-ext='json-enc' class='auth-form'>
-                {{block "signin_form" .}}
-                    <h3>Sign In</h3>
+            <form hx-post='/signup' hx-ext='json-enc' class='auth-form'>
+                {{block "signup_form" .}}
+                    <h3>Sign Up</h3>
 
                     {{with .notFound}}
                         <p class='auth-error'>{{ . }}</p>
@@ -16,22 +16,28 @@
                         <i class='auth-error'>{{ . }}</i>
                     {{end}}
 
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" placeholder="Your name" required>
+
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" placeholder="At least 8 characters long" required>
                     {{with .password}}
                         <i class='auth-error'>{{ . }}</i>
                     {{end}}
 
+                    <label for='avatar'>Avatar</label>
+                    <input id='avatar' name='avatar' type='file' >
+
                     <footer class="auth-action">
                         <button type="submit">
-                           <a href='#' class="htmx-indicator" aria-busy='true'></a> Submit
+                            <a href='#' class="htmx-indicator" aria-busy='true'></a> Submit
                         </button>
                     </footer>
                 {{end}}
             </form>
 
 
-            <b class='auth-hint'>Don't have an account? <a href='/signup'>Sign Up</a></b>
+            <b class='auth-hint'>Already have an account? <a href='/signin'>Sign In</a></b>
         </article>
 
     </section>

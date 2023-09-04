@@ -9,8 +9,11 @@
         </ul>
         <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/signin" role='button'>Signin</a></li>
-            <li><a href="/#" role='button'>Signup</a></li>
+            {{ if .IsAuthenticated }}
+                <li><a href='/logout' role='button'>Logout</a> </li>
+            {{else}}
+                <li><a href="/signin" role='button'>Signin</a></li>
+            {{end}}
         </ul>
     </nav>
 {{end}}

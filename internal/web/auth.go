@@ -17,6 +17,22 @@ func (h *Handler) SignInView(w http.ResponseWriter, _ *http.Request) {
 	h.PagesCache.Render(w, http.StatusOK, "signin.gohtml", nil, nil)
 }
 
+func (h *Handler) SignUpView(w http.ResponseWriter, _ *http.Request) {
+	h.PagesCache.Render(w, http.StatusOK, "signup.gohtml", nil, nil)
+}
+
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "Bearer",
+		MaxAge: -1,
+	})
+	w.Header().Set("HX-Redirect", "/signin")
+}
+
+func (h *Handler) SignUpForm(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func (h *Handler) SignInForm(w http.ResponseWriter, r *http.Request) {
 	var DTO SignInUserDTO
 

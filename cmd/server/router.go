@@ -6,7 +6,7 @@ import (
 	"github.com/accmeboot/issueshift/internal/web"
 	"github.com/accmeboot/issueshift/view"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"net/http"
 )
@@ -22,8 +22,8 @@ func NewRouter(db *sql.DB) *Router {
 	mux := chi.NewRouter()
 
 	// Common middlewares
-	mux.Use(middleware.Recoverer)
-	mux.Use(middleware.Logger)
+	mux.Use(chiMiddleware.Recoverer)
+	mux.Use(chiMiddleware.Logger)
 	mux.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"/"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -50,8 +50,17 @@ func NewRouter(db *sql.DB) *Router {
 }
 
 func (h *Router) MapRoutes() {
-	h.Mux.Get("/", h.Handler.HomeView)
+	// Auth protected routes
+	h.Mux.Group(func(r chi.Router) {
+		mux := r.With(h.Handler.Authenticated)
+		mux.Get("/", h.Handler.HomeView)
+		mux.Get("/logout", h.Handler.Logout)
+	})
+
 	h.Mux.Get("/signin", h.Handler.SignInView)
 	h.Mux.Post("/signin", h.Handler.SignInForm)
+
+	h.Mux.Get("/signup", h.Handler.SignUpView)
 	h.Mux.Get("/error", h.Handler.ErrorView)
+	h.Mux.Get("/images/{id}", h.Handler.GetImage)
 }

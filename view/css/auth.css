@@ -1,0 +1,21 @@
+.auth-form {
+    padding: 0 1.5rem;
+}
+
+.auth-card {
+    padding: 1.5rem 0;
+    max-width: 650px;
+}
+
+.auth-action {
+    margin-top: 1rem;
+}
+
+.auth-error {
+    color: darkred;
+}
+
+.auth-hint {
+    text-align: center;
+    display: block;
+}
