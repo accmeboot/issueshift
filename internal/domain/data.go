@@ -1,6 +1,8 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type userKey string
 type errKey string
@@ -30,6 +32,7 @@ type Task struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	Assignee    *User
+	Status      string
 }
 
 type Token struct {

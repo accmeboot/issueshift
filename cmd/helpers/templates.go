@@ -8,9 +8,20 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 )
 
 type Cache map[string]*template.Template
+
+func formatTime(t time.Time, layout string) string {
+	return t.UTC().Format(layout)
+}
+
+//"02 Jan 2006 at 15:04"
+
+var funcMap = template.FuncMap{
+	"formatTime": formatTime,
+}
 
 func NewCache() (*Cache, error) {
 	cache := Cache{}
@@ -27,7 +38,7 @@ func NewCache() (*Cache, error) {
 			page,
 		}
 
-		ts, err := template.New(name).ParseFS(web.Files, patterns...)
+		ts, err := template.New(name).Funcs(funcMap).ParseFS(web.Files, patterns...)
 
 		if err != nil {
 			return nil, err

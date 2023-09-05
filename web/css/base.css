@@ -1,5 +1,6 @@
 @import "nav.css";
 @import "auth.css";
+@import "home.css";
 
 .app {
     padding: 0 2rem;

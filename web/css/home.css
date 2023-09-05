@@ -1,0 +1,20 @@
+.home-task {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.home-container {
+    margin-top: 2rem;
+}
+
+.home-title {
+    white-space: nowrap;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.home-row-title {
+    text-align: center;
+}

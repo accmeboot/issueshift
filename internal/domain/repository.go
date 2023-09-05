@@ -10,4 +10,5 @@ type RepositoryProvider interface {
 	CreateToken(userId int64, hash []byte, expiry time.Time) error
 	GetUserFromToken(token []byte) (*User, error)
 	CreateTask(title, description string) error
+	GetAllTasks() ([]*Task, error)
 }
