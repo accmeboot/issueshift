@@ -8,25 +8,13 @@ import (
 	"time"
 )
 
-type TokenService struct {
-	repo domain.TokenRepository
-}
-
-var _ domain.TokenService = &TokenService{}
-
-func NewTokenService(r domain.TokenRepository) *TokenService {
-	return &TokenService{
-		repo: r,
-	}
-}
-
-func (s *TokenService) Authenticate(token string) (*domain.User, error) {
+func (p *Provider) Authenticate(token string) (*domain.User, error) {
 	hash := sha256.Sum256([]byte(token))
 
-	return s.repo.GetUserFromToken(hash[:])
+	return p.repository.GetUserFromToken(hash[:])
 }
 
-func (s *TokenService) Create(userId int64) (*string, error) {
+func (p *Provider) CreateToken(userId int64) (*string, error) {
 	randomBytes := make([]byte, 24)
 
 	_, err := rand.Read(randomBytes)
@@ -37,5 +25,5 @@ func (s *TokenService) Create(userId int64) (*string, error) {
 	tokenPlain := base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(randomBytes)
 	hash := sha256.Sum256([]byte(tokenPlain))
 
-	return &tokenPlain, s.repo.Create(userId, hash[:], time.Now().Add(3*24*time.Hour))
+	return &tokenPlain, p.repository.CreateToken(userId, hash[:], time.Now().Add(3*24*time.Hour))
 }

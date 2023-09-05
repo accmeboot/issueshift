@@ -1,7 +1,7 @@
 # Issueshift
 Agile board web app
 
-## An attempt to implement hexagonal architecture
+## Web app with go and htmx
 
 ## Development 
 
@@ -28,8 +28,8 @@ make migrations/down
 - https://github.com/pressly/goose
 
 ## Todo:
-- [ ] Overall api architecture
-- [ ] Stateful authorization
+- [x] Overall app architecture
+- [x] Stateful authorization
 - [ ] Projects (workspaces?)
 - [ ] Tasks
 - [ ] Boards

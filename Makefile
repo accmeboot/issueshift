@@ -1,7 +1,7 @@
 include .env
 
 run/dev:
-	go run ./cmd/server
+	go run ./cmd
 
 migrations/create:
 	goose -dir=./migrations/ postgres ${DSN} create ${name} sql

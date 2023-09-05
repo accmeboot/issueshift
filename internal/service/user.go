@@ -5,20 +5,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type UserService struct {
-	repo domain.UserRepository
-}
-
-var _ domain.UserService = &UserService{}
-
-func NewUserService(r domain.UserRepository) *UserService {
-	return &UserService{
-		repo: r,
-	}
-}
-
-func (s *UserService) GetUserByCredentials(email, password string) (*domain.User, error) {
-	user, err := s.repo.GetByEmail(email)
+func (p *Provider) GetUser(email, password string) (*domain.User, error) {
+	user, err := p.repository.GetUser(email)
 
 	if err != nil {
 		return nil, domain.ErrInvalidCredentials(err)
@@ -29,14 +17,14 @@ func (s *UserService) GetUserByCredentials(email, password string) (*domain.User
 		return nil, domain.ErrInvalidCredentials(err)
 	}
 
-	return s.repo.GetByEmail(email)
+	return user, nil
 }
 
-func (s *UserService) CreateUser(email, name, password string, avatarId *int64) error {
+func (p *Provider) CreateUser(email, name, password string, avatarId *int64) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		return domain.ErrServer(err)
 	}
 
-	return s.repo.CreateUser(email, name, avatarId, hash)
+	return p.repository.CreateUser(email, name, avatarId, hash)
 }
