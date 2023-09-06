@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/accmeboot/issueshift/cmd/helpers"
 	"github.com/accmeboot/issueshift/internal/domain"
 	"net/http"
 )
@@ -10,7 +11,7 @@ func (p *Provider) HomeView(w http.ResponseWriter, r *http.Request) {
 
 	allTasks, err := p.service.GetAllTasks()
 	if err != nil {
-		p.pages.ServerError(w, err)
+		p.templates.ServerError(w, err)
 		return
 	}
 
@@ -31,10 +32,14 @@ func (p *Provider) HomeView(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	p.pages.Render(w, http.StatusOK, "home.gohtml", nil, domain.Envelope{
-		"IsAuthenticated": ok,
-		"Todo":            todoTasks,
-		"InProgress":      inProgressTasks,
-		"Done":            doneTasks,
+	p.templates.Render(helpers.RenderDTO{
+		Writer:   w,
+		Template: "home.gohtml",
+		Data: domain.Envelope{
+			"IsAuthenticated": ok,
+			"Todo":            todoTasks,
+			"InProgress":      inProgressTasks,
+			"Done":            doneTasks,
+		},
 	})
 }

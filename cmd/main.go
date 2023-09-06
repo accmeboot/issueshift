@@ -25,12 +25,12 @@ func main() {
 	serviceProvider := service.NewProvider(repositoryProvider)
 	helpersProvider := helpers.NewProvider()
 
-	pagesProvider, err := helpers.NewCache()
+	templatesProvider, err := helpers.NewCache()
 	if err != nil {
 		panic(err)
 	}
 
-	handlersProvider := handlers.NewProvider(serviceProvider, pagesProvider, helpersProvider)
+	handlersProvider := handlers.NewProvider(serviceProvider, templatesProvider, helpersProvider)
 	middlewaresProvider := middlewares.NewProvider(serviceProvider)
 	routesProvider := routes.NewProvider(handlersProvider, middlewaresProvider)
 

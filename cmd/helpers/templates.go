@@ -2,6 +2,8 @@ package helpers
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"github.com/accmeboot/issueshift/web"
 	"html/template"
 	"io/fs"
@@ -13,11 +15,17 @@ import (
 
 type Cache map[string]*template.Template
 
+type RenderDTO struct {
+	Writer   http.ResponseWriter
+	Template string
+	Name     string
+	Status   int
+	Data     any
+}
+
 func formatTime(t time.Time, layout string) string {
 	return t.UTC().Format(layout)
 }
-
-//"02 Jan 2006 at 15:04"
 
 var funcMap = template.FuncMap{
 	"formatTime": formatTime,
@@ -47,35 +55,61 @@ func NewCache() (*Cache, error) {
 		cache[name] = ts
 	}
 
+	components, err := fs.Glob(web.Files, "components/*.gohtml")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, component := range components {
+		name := filepath.Base(component)
+
+		ts, err := template.New(name).Funcs(funcMap).ParseFS(web.Files, components...)
+
+		if err != nil {
+			return nil, err
+		}
+
+		cache[name] = ts
+	}
+
 	return &cache, nil
 }
 
-func (c Cache) Render(w http.ResponseWriter, status int, page string, fragment *string, data any) {
-	ts, ok := c[page]
+func (c Cache) Render(DTO RenderDTO) {
+	if DTO.Writer == nil {
+		panic(errors.New("templates: no response writer"))
+	}
+
+	if DTO.Template == "" {
+		panic(errors.New("templates: no template name"))
+	}
+
+	ts, ok := c[DTO.Template]
 	if !ok {
-		log.Printf("template %s: does not exist", page)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		c.ServerError(DTO.Writer, fmt.Errorf("template %s: does not exist", DTO.Template))
 		return
 	}
 
-	// First executing a template into a buffer, in order to prevent corrupted templates to a client
-	buf := new(bytes.Buffer)
-	tmlFragment := "base"
+	buffer := new(bytes.Buffer)
 
-	if fragment != nil {
-		tmlFragment = *fragment
+	name := "base"
+	if DTO.Name != "" {
+		name = DTO.Name
 	}
 
-	err := ts.ExecuteTemplate(buf, tmlFragment, data)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+	if err := ts.ExecuteTemplate(buffer, name, DTO.Data); err != nil {
+		c.ServerError(DTO.Writer, fmt.Errorf("failed to execute template: %s; %s", DTO.Template, err.Error()))
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(status)
-	if _, err = buf.WriteTo(w); err != nil {
+	status := http.StatusOK
+	if DTO.Status != 0 {
+		status = DTO.Status
+	}
+
+	DTO.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
+	DTO.Writer.WriteHeader(status)
+	if _, err := buffer.WriteTo(DTO.Writer); err != nil {
 		log.Println(err)
 	}
 }

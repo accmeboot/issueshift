@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"github.com/accmeboot/issueshift/cmd/helpers"
 	"github.com/accmeboot/issueshift/internal/domain"
 	"log"
 	"net/http"
@@ -26,7 +27,10 @@ func (p *Provider) SignInView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.pages.Render(w, http.StatusOK, "signin.gohtml", nil, nil)
+	p.templates.Render(helpers.RenderDTO{
+		Writer:   w,
+		Template: "signin.gohtml",
+	})
 }
 
 func (p *Provider) SignUpView(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +41,10 @@ func (p *Provider) SignUpView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.pages.Render(w, http.StatusOK, "signup.gohtml", nil, nil)
+	p.templates.Render(helpers.RenderDTO{
+		Writer:   w,
+		Template: "signup.gohtml",
+	})
 }
 
 func (p *Provider) Logout(w http.ResponseWriter, _ *http.Request) {
@@ -50,11 +57,15 @@ func (p *Provider) Logout(w http.ResponseWriter, _ *http.Request) {
 
 func (p *Provider) SignUpForm(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(4 << 20)
-	fragment := "signup_form"
 	if err != nil {
-		p.pages.Render(w, http.StatusOK, "signup.gohtml", &fragment, domain.Envelope{
-			"validation": domain.Envelope{
-				"avatar": "image exceeds max size of 4mb",
+		p.templates.Render(helpers.RenderDTO{
+			Writer:   w,
+			Template: "signup.gohtml",
+			Name:     "signup_form",
+			Data: domain.Envelope{
+				"validation": domain.Envelope{
+					"avatar": "image exceeds max size of 4mb",
+				},
 			},
 		})
 		return
@@ -67,11 +78,15 @@ func (p *Provider) SignUpForm(w http.ResponseWriter, r *http.Request) {
 
 	validator := p.helpers.NewValidator()
 	if ok := validator.Validate(DTO); !ok {
-		log.Println(validator.Errors)
-		p.pages.Render(w, http.StatusOK, "signup.gohtml", &fragment, domain.Envelope{
-			"validation": validator.Errors,
-			"email":      &DTO.Email,
-			"name":       &DTO.Name,
+		p.templates.Render(helpers.RenderDTO{
+			Writer:   w,
+			Template: "signup.gohtml",
+			Name:     "signup_form",
+			Data: domain.Envelope{
+				"validation": validator.Errors,
+				"email":      &DTO.Email,
+				"name":       &DTO.Name,
+			},
 		})
 		return
 	}
@@ -87,7 +102,7 @@ func (p *Provider) SignUpForm(w http.ResponseWriter, r *http.Request) {
 		}()
 		id, err = p.service.CreateImage(&file, header.Filename)
 		if err != nil {
-			p.pages.ServerError(w, err)
+			p.templates.ServerError(w, err)
 			return
 		}
 	}
@@ -103,13 +118,18 @@ func (p *Provider) SignUpForm(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		switch {
 		case errors.As(err, &alreadyExists):
-			p.pages.Render(w, http.StatusOK, "signup.gohtml", &fragment, domain.Envelope{
-				"error": "These credentials are not available try again",
-				"email": &DTO.Email,
-				"name":  &DTO.Name,
+			p.templates.Render(helpers.RenderDTO{
+				Writer:   w,
+				Template: "signup.gohtml",
+				Name:     "signup_form",
+				Data: domain.Envelope{
+					"error": "These credentials are not available try again",
+					"email": &DTO.Email,
+					"name":  &DTO.Name,
+				},
 			})
 		default:
-			p.pages.ServerError(w, err)
+			p.templates.ServerError(w, err)
 		}
 		return
 	}
@@ -122,18 +142,20 @@ func (p *Provider) SignInForm(w http.ResponseWriter, r *http.Request) {
 
 	err := p.helpers.ReadJSON(w, r, &DTO)
 	if err != nil {
-		p.pages.ServerError(w, err)
+		p.templates.ServerError(w, err)
 		return
 	}
 
 	validator := p.helpers.NewValidator()
-	fragment := "signin_form"
 
 	if ok := validator.Validate(DTO); !ok {
-		// Sending 200 as it is a fragment
-		// To enable htmx to swap html with 4.xx codes needs some extensions
-		p.pages.Render(w, http.StatusOK, "signin.gohtml", &fragment, domain.Envelope{
-			"validation": validator.Errors,
+		p.templates.Render(helpers.RenderDTO{
+			Writer:   w,
+			Template: "signin.gohtml",
+			Name:     "signin_form",
+			Data: domain.Envelope{
+				"validation": validator.Errors,
+			},
 		})
 		return
 	}
@@ -143,14 +165,14 @@ func (p *Provider) SignInForm(w http.ResponseWriter, r *http.Request) {
 		var invalidCredentials domain.ErrInvalidCredentials
 		switch {
 		case errors.As(err, &invalidCredentials):
-			p.pages.Render(
-				w, http.StatusOK,
-				"signin.gohtml",
-				&fragment,
-				domain.Envelope{"error": "invalid credentials"},
-			)
+			p.templates.Render(helpers.RenderDTO{
+				Writer:   w,
+				Template: "signin.gohtml",
+				Name:     "signin_form",
+				Data:     domain.Envelope{"error": "invalid credentials"},
+			})
 		default:
-			p.pages.ServerError(w, err)
+			p.templates.ServerError(w, err)
 		}
 		return
 	}
@@ -158,7 +180,7 @@ func (p *Provider) SignInForm(w http.ResponseWriter, r *http.Request) {
 	token, err := p.service.CreateToken(user.ID)
 
 	if err != nil {
-		p.pages.ServerError(w, err)
+		p.templates.ServerError(w, err)
 		return
 	}
 

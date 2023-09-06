@@ -1,0 +1,75 @@
+.create-task-container {
+    margin: var(--block-spacing-vertical) 0;
+    padding: var(--block-spacing-vertical) var(--block-spacing-horizontal);
+    padding-bottom: 0;
+    border-radius: var(--border-radius);
+    background: var(--card-background-color);
+    box-shadow: var(--card-box-shadow);
+}
+
+.create-task-container form footer {
+    margin-right: calc(var(--block-spacing-horizontal) * -1);
+    margin-left: calc(var(--block-spacing-horizontal) * -1);
+    padding: calc(var(--block-spacing-vertical) * .66) var(--block-spacing-horizontal);
+    background-color: var(--card-sectionning-background-color);
+    text-align: end;
+}
+
+.create-task-container form {
+    margin-bottom: 0;
+}
+
+/* Dropdown Container */
+.create-task-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Content (Hidden by default) */
+.create-task-dropdown-content {
+    display: none;
+    z-index: 99;
+    position: absolute;
+    top: auto;
+    right: 0;
+    left: 0;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    border: var(--border-width) solid var(--dropdown-border-color);
+    border-radius: var(--border-radius);
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    background-color: var(--dropdown-background-color);
+    box-shadow: var(--card-box-shadow);
+    color: var(--dropdown-color);
+    white-space: nowrap;
+    margin-top: calc(var(--spacing) * -1);
+}
+
+/* Links inside the dropdown */
+.create-task-dropdown-content li a {
+    display: block;
+    margin: calc(var(--form-element-spacing-vertical) * -.5) calc(var(--form-element-spacing-horizontal) * -1);
+    padding: calc(var(--form-element-spacing-vertical) * .5) var(--form-element-spacing-horizontal);
+    overflow: hidden;
+    color: var(--dropdown-color);
+    text-decoration: none;
+    text-overflow: ellipsis;
+}
+.create-task-dropdown-content li {
+    margin-top: calc(var(--form-element-spacing-vertical) * .5);
+    width: 100%;
+    margin-bottom: 0;
+    padding: calc(var(--form-element-spacing-vertical) * .5) var(--form-element-spacing-horizontal);
+    list-style: none;
+}
+
+.create-task-dropdown-content li a:hover {
+    background-color: var(--dropdown-hover-background-color);
+}
+
+/* Show the dropdown menu on focus */
+#assignee:focus + .create-task-dropdown-content {
+    display: flex;
+}

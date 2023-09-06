@@ -8,8 +8,11 @@ func (p *Provider) mapViews() {
 
 	p.Mux.Group(func(r chi.Router) {
 		mux := r.With(p.middlewares.Authenticated)
+
 		mux.Get("/", p.handlers.HomeView)
 		mux.Get("/logout", p.handlers.Logout)
+		mux.Get("/tasks/create", p.handlers.CreateTaskView)
+		mux.Get("/tasks/create/cancel", p.handlers.CreatTaskViewCancel)
 	})
 
 	p.Mux.Get("/signin", p.handlers.SignInView)

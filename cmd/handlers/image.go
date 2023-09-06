@@ -24,7 +24,7 @@ func (p *Provider) GetImage(w http.ResponseWriter, r *http.Request) {
 		case errors.As(err, &noRecord):
 			w.WriteHeader(http.StatusNotFound)
 		default:
-			p.pages.ServerError(w, err)
+			p.templates.ServerError(w, err)
 		}
 		return
 	}

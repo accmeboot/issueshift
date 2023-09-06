@@ -1,19 +1,20 @@
 {{define "base"}}
-<!DOCTYPE html>
-<html lang='en'>
-<head>
-	<meta charset='UTF-8'>
-	<title>{{ template "title" .}}</title>
-	<link rel="stylesheet" href="../static/pico.min.css">
-	<link rel="stylesheet" href="../css/base.css">
-</head>
-<body>
-{{template "nav" .}}
-<main class='app'>
-	{{template "main" .}}
-</main>
-<script src="../static/htmx.min.js"></script>
-<script src="../static/json-enc.js"></script>
-</body>
-</html>
+  <!DOCTYPE html>
+  <html lang='en'>
+  <head>
+    <meta charset='UTF-8'>
+    <title>{{ template "title" .}}</title>
+    <link rel="stylesheet" href="../static/pico.min.css">
+    <link rel="stylesheet" href="../static/fontawesome.min.css">
+    <link rel="stylesheet" href="../css/base.css">
+  </head>
+  <body>
+  {{template "nav" .}}
+  <main class='app'>
+      {{template "main" .}}
+  </main>
+  <script src="../static/htmx.min.js"></script>
+  <script src="../static/json-enc.js"></script>
+  </body>
+  </html>
 {{ end }}
