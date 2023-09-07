@@ -4,21 +4,21 @@ import (
 	"context"
 	"github.com/accmeboot/issueshift/internal/domain"
 	"net/http"
+	"strings"
 )
 
 func (p *Provider) Authenticated(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenCookie, err := r.Cookie("Bearer")
-		if err != nil {
-			w.Header().Set("HX-Redirect", "/signin")
-			http.Redirect(w, r, "/signin", http.StatusFound)
+		parts := strings.Split(r.Header.Get("Authorization"), " ")
+
+		if len(parts) < 2 {
+			w.WriteHeader(http.StatusForbidden)
 			return
 		}
 
-		user, err := p.service.Authenticate(tokenCookie.Value)
+		user, err := p.service.Authenticate(parts[1])
 		if err != nil {
-			w.Header().Set("HX-Redirect", "/signin")
-			http.Redirect(w, r, "/signin", http.StatusFound)
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 

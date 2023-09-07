@@ -9,6 +9,6 @@ type RepositoryProvider interface {
 	GetUser(email string) (*User, error)
 	CreateToken(userId int64, hash []byte, expiry time.Time) error
 	GetUserFromToken(token []byte) (*User, error)
-	CreateTask(title, description string) error
+	CreateTask(title, description, status string, assignee int64) error
 	GetAllTasks() ([]*Task, error)
 }

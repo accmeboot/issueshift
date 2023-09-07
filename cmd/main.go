@@ -21,16 +21,16 @@ func main() {
 		panic(err)
 	}
 
-	repositoryProvider := respository.NewProvider(db)
-	serviceProvider := service.NewProvider(repositoryProvider)
-	helpersProvider := helpers.NewProvider()
-
-	templatesProvider, err := helpers.NewCache()
+	err = db.Ping()
 	if err != nil {
 		panic(err)
 	}
 
-	handlersProvider := handlers.NewProvider(serviceProvider, templatesProvider, helpersProvider)
+	repositoryProvider := respository.NewProvider(db)
+	serviceProvider := service.NewProvider(repositoryProvider)
+	helpersProvider := helpers.NewProvider()
+
+	handlersProvider := handlers.NewProvider(serviceProvider, helpersProvider)
 	middlewaresProvider := middlewares.NewProvider(serviceProvider)
 	routesProvider := routes.NewProvider(handlersProvider, middlewaresProvider)
 

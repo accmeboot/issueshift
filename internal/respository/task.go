@@ -6,13 +6,13 @@ import (
 	"time"
 )
 
-func (p *Provider) CreateTask(title, description string) error {
-	query := `INSERT INTO tasks (title, description) VALUES ($1, $2)`
+func (p *Provider) CreateTask(title, description, status string, assignee int64) error {
+	query := `INSERT INTO tasks (title, description, status, assignee) VALUES ($1, $2, $3, $4)`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	_, err := p.db.ExecContext(ctx, query, title, description)
+	_, err := p.db.ExecContext(ctx, query, title, description, status, assignee)
 	if err != nil {
 		return domain.ErrServer(err)
 	}
@@ -22,13 +22,7 @@ func (p *Provider) CreateTask(title, description string) error {
 
 func (p *Provider) GetAllTasks() ([]*domain.Task, error) {
 	query := `
-			  SELECT
-					tasks.title,
-			        CASE 
-						 WHEN LENGTH(tasks.description) > 150 THEN LEFT(tasks.description, 150) || '...' 
-						 ELSE tasks.description 
-					END AS description_truncated,
-			    tasks.created_at, tasks.updated_at, tasks.status, users.email
+			  SELECT tasks.title, tasks.description, tasks.created_at, tasks.updated_at, tasks.status, users.email
 			  FROM tasks INNER JOIN users
 			  ON tasks.assignee = users.id;
 			 `

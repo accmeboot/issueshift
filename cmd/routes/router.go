@@ -1,11 +1,9 @@
 package routes
 
 import (
-	"github.com/accmeboot/issueshift/web"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"net/http"
 )
 
 func (p *Provider) CreateRouter() {
@@ -22,16 +20,6 @@ func (p *Provider) CreateRouter() {
 		AllowCredentials: false,
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
-
-	fileServer := http.FileServer(http.FS(web.Files))
-
-	//Files server from embedded var
-	mux.Get("/static/*", func(w http.ResponseWriter, r *http.Request) {
-		fileServer.ServeHTTP(w, r)
-	})
-	mux.Get("/css/*", func(w http.ResponseWriter, r *http.Request) {
-		fileServer.ServeHTTP(w, r)
-	})
 
 	p.Mux = mux
 }

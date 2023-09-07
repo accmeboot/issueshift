@@ -19,8 +19,7 @@ func NewProvider(handlers *handlers.Provider, middlewares *middlewares.Provider)
 	}
 
 	provider.CreateRouter()
-	provider.mapViews()
-	provider.mapForms()
+	provider.MapEndpoints()
 
 	return provider
 }

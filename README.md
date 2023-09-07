@@ -1,7 +1,5 @@
 # Issueshift
-Agile board web app
-
-## Web app with go and htmx
+Agile board api
 
 ## Development 
 
@@ -26,6 +24,7 @@ make migrations/down
 ## Stack
 - https://github.com/go-chi/chi
 - https://github.com/pressly/goose
+- https://www.postgresql.org/
 
 ## Todo:
 - [x] Overall app architecture
@@ -34,4 +33,3 @@ make migrations/down
 - [ ] Tasks
 - [ ] Boards
 - [ ] Account management
-- [ ] Frontend

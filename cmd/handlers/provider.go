@@ -6,11 +6,10 @@ import (
 )
 
 type Provider struct {
-	service   domain.ServiceProvider
-	helpers   *helpers.Provider
-	templates *helpers.Cache
+	service domain.ServiceProvider
+	helpers *helpers.Provider
 }
 
-func NewProvider(service domain.ServiceProvider, templates *helpers.Cache, helpers *helpers.Provider) *Provider {
-	return &Provider{service: service, templates: templates, helpers: helpers}
+func NewProvider(service domain.ServiceProvider, helpers *helpers.Provider) *Provider {
+	return &Provider{service: service, helpers: helpers}
 }

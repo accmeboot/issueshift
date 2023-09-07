@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/accmeboot/issueshift/internal/domain"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
 
-func (p *Provider) ReadJSON(w http.ResponseWriter, r *http.Request, target any) error {
+func (p *Provider) ReadBody(w http.ResponseWriter, r *http.Request, target any) error {
 	maxBytes := 1_048_576 // 1mb
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
 	dec := json.NewDecoder(r.Body)
@@ -53,4 +55,49 @@ func (p *Provider) ReadJSON(w http.ResponseWriter, r *http.Request, target any) 
 	}
 
 	return nil
+}
+
+func (p *Provider) Send(w http.ResponseWriter, status int, data domain.Envelope) {
+	info, err := json.Marshal(data)
+	if err != nil {
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if _, err = w.Write(info); err != nil {
+		log.Printf("error processing response json: %s\n", err)
+	}
+}
+
+func (p *Provider) SendError(w http.ResponseWriter, statusCode int, errorDetails domain.Envelope, err error) {
+	if err != nil {
+		log.Println(err)
+	}
+
+	p.Send(w, statusCode, errorDetails)
+}
+
+func (p *Provider) SendServerError(w http.ResponseWriter, err error) {
+	if err != nil {
+		log.Println(err)
+	}
+
+	p.Send(w, http.StatusInternalServerError, domain.Envelope{
+		"error": "internal server error",
+	})
+}
+
+func (p *Provider) SendUnprocessableEntity(w http.ResponseWriter, err error) {
+	p.SendError(w, http.StatusUnprocessableEntity, domain.Envelope{"error": "failed to parse body"}, err)
+}
+
+func (p *Provider) SendBadRequest(w http.ResponseWriter, data domain.Envelope, err error) {
+	p.SendError(w, http.StatusBadRequest, data, err)
+}
+
+func (p *Provider) SendNotFound(w http.ResponseWriter, err error) {
+	p.SendError(w, http.StatusNotFound, domain.Envelope{
+		"error": "requested resource has not been found",
+	}, err)
 }

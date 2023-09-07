@@ -46,6 +46,11 @@ func (v *Validator) Validate(s any) bool {
 				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && err != nil {
 					v.Errors[strings.ToLower(field.Name)] = err
 				}
+			case "task_status":
+				err := taskStatus(val.Field(i).String())
+				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && err != nil {
+					v.Errors[strings.ToLower(field.Name)] = err
+				}
 			}
 		}
 
@@ -84,6 +89,15 @@ func password(value string) *string {
 
 	if len(value) < 8 {
 		message := fmt.Sprint("password is too weak")
+		return &message
+	}
+
+	return nil
+}
+
+func taskStatus(value string) *string {
+	if value != "todo" && value != "in_progress" && value != "done" {
+		message := "allowed values: todo, in_progress, done"
 		return &message
 	}
 

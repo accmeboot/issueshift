@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"errors"
-	"github.com/accmeboot/issueshift/cmd/helpers"
 	"github.com/accmeboot/issueshift/internal/domain"
-	"log"
 	"net/http"
 )
 
@@ -17,146 +15,53 @@ type RegisterUserDTO struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,password"`
 	Name     string `json:"name" validate:"required"`
+	AvatarID int64  `json:"avatar_id"`
 }
 
-func (p *Provider) SignInView(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie("Bearer")
-	if err == nil {
-		w.Header().Set("HX-Redirect", "/")
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
+func (p *Provider) SignUp(w http.ResponseWriter, r *http.Request) {
+	var DTO RegisterUserDTO
 
-	p.templates.Render(helpers.RenderDTO{
-		Writer:   w,
-		Template: "signin.gohtml",
-	})
-}
-
-func (p *Provider) SignUpView(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie("Bearer")
-	if err == nil {
-		w.Header().Set("HX-Redirect", "/")
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	p.templates.Render(helpers.RenderDTO{
-		Writer:   w,
-		Template: "signup.gohtml",
-	})
-}
-
-func (p *Provider) Logout(w http.ResponseWriter, _ *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:   "Bearer",
-		MaxAge: -1,
-	})
-	w.Header().Set("HX-Redirect", "/signin")
-}
-
-func (p *Provider) SignUpForm(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseMultipartForm(4 << 20)
+	err := p.helpers.ReadBody(w, r, &DTO)
 	if err != nil {
-		p.templates.Render(helpers.RenderDTO{
-			Writer:   w,
-			Template: "signup.gohtml",
-			Name:     "signup_form",
-			Data: domain.Envelope{
-				"validation": domain.Envelope{
-					"avatar": "image exceeds max size of 4mb",
-				},
-			},
-		})
+		p.helpers.SendUnprocessableEntity(w, err)
 		return
-	}
-	DTO := RegisterUserDTO{
-		Name:     r.Form.Get("name"),
-		Email:    r.Form.Get("email"),
-		Password: r.Form.Get("password"),
 	}
 
 	validator := p.helpers.NewValidator()
 	if ok := validator.Validate(DTO); !ok {
-		p.templates.Render(helpers.RenderDTO{
-			Writer:   w,
-			Template: "signup.gohtml",
-			Name:     "signup_form",
-			Data: domain.Envelope{
-				"validation": validator.Errors,
-				"email":      &DTO.Email,
-				"name":       &DTO.Name,
-			},
-		})
+		p.helpers.SendBadRequest(w, domain.Envelope{"validation_errors": validator.Errors}, nil)
 		return
 	}
 
-	file, header, err := r.FormFile("avatar")
-	var id int64
-	if err == nil {
-		defer func() {
-			err = file.Close()
-			if err != nil {
-				panic(err)
-			}
-		}()
-		id, err = p.service.CreateImage(&file, header.Filename)
-		if err != nil {
-			p.templates.ServerError(w, err)
+	err = p.service.CreateUser(DTO.Email, DTO.Name, DTO.Password, &DTO.AvatarID)
+	if err != nil {
+		var alreadyExists domain.ErrAlreadyExists
+		switch {
+		case errors.As(err, &alreadyExists):
+			p.helpers.SendBadRequest(w, domain.Envelope{"error": "This credentials are not available try again"}, err)
+			return
+		default:
+			p.helpers.SendServerError(w, err)
 			return
 		}
 	}
 
-	var avatarId *int64 = nil
-	if id != 0 {
-		avatarId = &id
-	}
-
-	err = p.service.CreateUser(DTO.Email, DTO.Name, DTO.Password, avatarId)
-	if err != nil {
-		var alreadyExists domain.ErrAlreadyExists
-		log.Println(err)
-		switch {
-		case errors.As(err, &alreadyExists):
-			p.templates.Render(helpers.RenderDTO{
-				Writer:   w,
-				Template: "signup.gohtml",
-				Name:     "signup_form",
-				Data: domain.Envelope{
-					"error": "These credentials are not available try again",
-					"email": &DTO.Email,
-					"name":  &DTO.Name,
-				},
-			})
-		default:
-			p.templates.ServerError(w, err)
-		}
-		return
-	}
-
-	w.Header().Set("HX-Redirect", "/signin")
+	w.WriteHeader(http.StatusCreated)
 }
 
-func (p *Provider) SignInForm(w http.ResponseWriter, r *http.Request) {
+func (p *Provider) SignIn(w http.ResponseWriter, r *http.Request) {
 	var DTO SignInUserDTO
 
-	err := p.helpers.ReadJSON(w, r, &DTO)
+	err := p.helpers.ReadBody(w, r, &DTO)
 	if err != nil {
-		p.templates.ServerError(w, err)
+		p.helpers.SendUnprocessableEntity(w, err)
 		return
 	}
 
 	validator := p.helpers.NewValidator()
 
 	if ok := validator.Validate(DTO); !ok {
-		p.templates.Render(helpers.RenderDTO{
-			Writer:   w,
-			Template: "signin.gohtml",
-			Name:     "signin_form",
-			Data: domain.Envelope{
-				"validation": validator.Errors,
-			},
-		})
+		p.helpers.SendBadRequest(w, domain.Envelope{"validation_errors": validator.Errors}, nil)
 		return
 	}
 
@@ -165,14 +70,9 @@ func (p *Provider) SignInForm(w http.ResponseWriter, r *http.Request) {
 		var invalidCredentials domain.ErrInvalidCredentials
 		switch {
 		case errors.As(err, &invalidCredentials):
-			p.templates.Render(helpers.RenderDTO{
-				Writer:   w,
-				Template: "signin.gohtml",
-				Name:     "signin_form",
-				Data:     domain.Envelope{"error": "invalid credentials"},
-			})
+			p.helpers.SendError(w, http.StatusNotFound, domain.Envelope{"error": "invalid credentials"}, err)
 		default:
-			p.templates.ServerError(w, err)
+			p.helpers.SendServerError(w, err)
 		}
 		return
 	}
@@ -180,15 +80,9 @@ func (p *Provider) SignInForm(w http.ResponseWriter, r *http.Request) {
 	token, err := p.service.CreateToken(user.ID)
 
 	if err != nil {
-		p.templates.ServerError(w, err)
+		p.helpers.SendServerError(w, err)
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "Bearer",
-		Value:    *token,
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	})
-	w.Header().Set("HX-Redirect", "/")
+	p.helpers.Send(w, http.StatusOK, domain.Envelope{"token": token})
 }
