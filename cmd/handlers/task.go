@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/accmeboot/issueshift/internal/domain"
-	"log"
 	"net/http"
 )
 
@@ -14,7 +13,9 @@ type CreateTaskDTO struct {
 }
 
 func (p *Provider) GetAllTasks(w http.ResponseWriter, r *http.Request) {
-	tasks, err := p.service.GetAllTasks()
+	status := r.URL.Query().Get("status")
+
+	tasks, err := p.service.GetAllTasks(status)
 	if err != nil {
 		p.helpers.SendServerError(w, err)
 		return
@@ -46,8 +47,6 @@ func (p *Provider) CreateTask(w http.ResponseWriter, r *http.Request) {
 		}, nil)
 		return
 	}
-
-	log.Println(DTO)
 
 	err = p.service.CreateTask(DTO.Title, DTO.Description, DTO.Status, DTO.Assignee)
 	if err != nil {

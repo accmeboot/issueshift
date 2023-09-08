@@ -2,6 +2,7 @@ package respository
 
 import (
 	"context"
+	"fmt"
 	"github.com/accmeboot/issueshift/internal/domain"
 	"time"
 )
@@ -20,17 +21,22 @@ func (p *Provider) CreateTask(title, description, status string, assignee int64)
 	return nil
 }
 
-func (p *Provider) GetAllTasks() ([]*domain.Task, error) {
+func (p *Provider) GetAllTasks(status string) ([]*domain.Task, error) {
+	var args []any
 	query := `
 			  SELECT tasks.title, tasks.description, tasks.created_at, tasks.updated_at, tasks.status, users.email
 			  FROM tasks INNER JOIN users
-			  ON tasks.assignee = users.id;
+			  ON tasks.assignee = users.id
 			 `
+	if status == "todo" || status == "in_progress" || status == "done" {
+		query = fmt.Sprintf("%s %s", query, `WHERE status = $1`)
+		args = append(args, status)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := p.db.QueryContext(ctx, query)
+	rows, err := p.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, domain.ErrServer(err)
 	}

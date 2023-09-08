@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/issueshift.iml" filepath="$PROJECT_DIR$/.idea/issueshift.iml" />
+      <module fileurl="file://$USER_HOME$/Desktop/projects/issueshift-ui/.idea/issueshift-ui.iml" filepath="$USER_HOME$/Desktop/projects/issueshift-ui/.idea/issueshift-ui.iml" />
     </modules>
   </component>
 </project>
