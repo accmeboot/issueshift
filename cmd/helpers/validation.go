@@ -9,15 +9,15 @@ import (
 )
 
 type Validator struct {
-	Errors domain.Envelope
+	Errors domain.Error
 }
 
 func (p *Provider) NewValidator() *Validator {
-	return &Validator{Errors: make(domain.Envelope)}
+	return &Validator{Errors: make(domain.Error)}
 }
 
 func (v *Validator) Clear() {
-	v.Errors = domain.Envelope{}
+	v.Errors = domain.Error{}
 }
 
 func (v *Validator) Validate(s any) bool {
@@ -32,24 +32,24 @@ func (v *Validator) Validate(s any) bool {
 		for _, t := range tags {
 			switch t {
 			case "required":
-				err := required(val.Field(i).String(), strings.ToLower(field.Name))
-				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && err != nil {
-					v.Errors[strings.ToLower(field.Name)] = err
+				message := required(val.Field(i).String(), strings.ToLower(field.Name))
+				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && len(message) > 0 {
+					v.Errors[strings.ToLower(field.Name)] = message
 				}
 			case "password":
-				err := password(val.Field(i).String())
-				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && err != nil {
-					v.Errors[strings.ToLower(field.Name)] = err
+				message := password(val.Field(i).String())
+				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && len(message) > 0 {
+					v.Errors[strings.ToLower(field.Name)] = message
 				}
 			case "email":
-				err := email(val.Field(i).String())
-				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && err != nil {
-					v.Errors[strings.ToLower(field.Name)] = err
+				message := email(val.Field(i).String())
+				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && len(message) > 0 {
+					v.Errors[strings.ToLower(field.Name)] = message
 				}
 			case "task_status":
-				err := taskStatus(val.Field(i).String())
-				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && err != nil {
-					v.Errors[strings.ToLower(field.Name)] = err
+				message := taskStatus(val.Field(i).String())
+				if _, ok := v.Errors[strings.ToLower(field.Name)]; !ok && len(message) > 0 {
+					v.Errors[strings.ToLower(field.Name)] = message
 				}
 			}
 		}
@@ -63,43 +63,39 @@ func (v *Validator) Validate(s any) bool {
 	return len(v.Errors) == 0
 }
 
-func required(value, name string) *string {
+func required(value, name string) string {
 	if value == "" {
-		message := fmt.Sprintf("field %s is required", name)
-		return &message
+		return fmt.Sprintf("field %s is required", name)
 	}
 
-	return nil
+	return ""
 }
 
-func email(value string) *string {
+func email(value string) string {
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 	if !emailRegex.MatchString(value) {
-		message := fmt.Sprint("email is invalid")
-		return &message
+		return "email is invalid"
 	}
 
-	return nil
+	return ""
 }
 
-func password(value string) *string {
+func password(value string) string {
 	// TODO: patterns like ?=. don't work with go, but you can put each check into different regex
 	//passwordRegex := regexp.MustCompile(`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$`)
 
 	if len(value) < 8 {
-		message := fmt.Sprint("password is too weak")
-		return &message
+		return "password is too weak"
 	}
 
-	return nil
+	return ""
 }
 
-func taskStatus(value string) *string {
+func taskStatus(value string) string {
 	if value != "todo" && value != "in_progress" && value != "done" {
-		message := "allowed values: todo, in_progress, done"
-		return &message
+		return "allowed values: todo, in_progress, done"
 	}
 
-	return nil
+	return ""
 }

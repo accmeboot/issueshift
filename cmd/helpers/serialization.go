@@ -70,34 +70,34 @@ func (p *Provider) Send(w http.ResponseWriter, status int, data domain.Envelope)
 	}
 }
 
-func (p *Provider) SendError(w http.ResponseWriter, statusCode int, errorDetails domain.Envelope, err error) {
+func (p *Provider) SendError(w http.ResponseWriter, statusCode int, errorDetails domain.Error, err error) {
 	if err != nil {
 		log.Println(err)
 	}
 
-	p.Send(w, statusCode, errorDetails)
-}
-
-func (p *Provider) SendServerError(w http.ResponseWriter, err error) {
-	if err != nil {
-		log.Println(err)
-	}
-
-	p.Send(w, http.StatusInternalServerError, domain.Envelope{
-		"error": "internal server error",
+	p.Send(w, statusCode, domain.Envelope{
+		"errors": errorDetails,
 	})
 }
 
-func (p *Provider) SendUnprocessableEntity(w http.ResponseWriter, err error) {
-	p.SendError(w, http.StatusUnprocessableEntity, domain.Envelope{"error": "failed to parse body"}, err)
+func (p *Provider) SendServerError(w http.ResponseWriter, err error) {
+	p.SendError(w, http.StatusInternalServerError, domain.Error{
+		"internal": "internal server error",
+	}, err)
 }
 
-func (p *Provider) SendBadRequest(w http.ResponseWriter, data domain.Envelope, err error) {
+func (p *Provider) SendUnprocessableEntity(w http.ResponseWriter, err error) {
+	p.SendError(w, http.StatusUnprocessableEntity, domain.Error{
+		"unprocessable_entity": "failed to parse body",
+	}, err)
+}
+
+func (p *Provider) SendBadRequest(w http.ResponseWriter, data domain.Error, err error) {
 	p.SendError(w, http.StatusBadRequest, data, err)
 }
 
 func (p *Provider) SendNotFound(w http.ResponseWriter, err error) {
-	p.SendError(w, http.StatusNotFound, domain.Envelope{
-		"error": "requested resource has not been found",
+	p.SendError(w, http.StatusNotFound, domain.Error{
+		"not_found": "requested resource could not be found",
 	}, err)
 }

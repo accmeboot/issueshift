@@ -42,7 +42,7 @@ func (p *Provider) CreateImage(w http.ResponseWriter, r *http.Request) {
 	}
 	file, header, err := r.FormFile("image")
 	if err != nil {
-		p.helpers.SendBadRequest(w, domain.Envelope{"error": "no files have been provided in the filed image"}, err)
+		p.helpers.SendBadRequest(w, domain.Error{"no_files": "no files have been provided in the filed image"}, err)
 		return
 	}
 

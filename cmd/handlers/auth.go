@@ -29,7 +29,7 @@ func (p *Provider) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	validator := p.helpers.NewValidator()
 	if ok := validator.Validate(DTO); !ok {
-		p.helpers.SendBadRequest(w, domain.Envelope{"validation_errors": validator.Errors}, nil)
+		p.helpers.SendBadRequest(w, validator.Errors, nil)
 		return
 	}
 
@@ -38,7 +38,7 @@ func (p *Provider) SignUp(w http.ResponseWriter, r *http.Request) {
 		var alreadyExists domain.ErrAlreadyExists
 		switch {
 		case errors.As(err, &alreadyExists):
-			p.helpers.SendBadRequest(w, domain.Envelope{"error": "This credentials are not available try again"}, err)
+			p.helpers.SendBadRequest(w, domain.Error{"credentials": "This credentials are not available try again"}, err)
 			return
 		default:
 			p.helpers.SendServerError(w, err)
@@ -61,7 +61,7 @@ func (p *Provider) SignIn(w http.ResponseWriter, r *http.Request) {
 	validator := p.helpers.NewValidator()
 
 	if ok := validator.Validate(DTO); !ok {
-		p.helpers.SendBadRequest(w, domain.Envelope{"validation_errors": validator.Errors}, nil)
+		p.helpers.SendBadRequest(w, validator.Errors, nil)
 		return
 	}
 
@@ -70,7 +70,7 @@ func (p *Provider) SignIn(w http.ResponseWriter, r *http.Request) {
 		var invalidCredentials domain.ErrInvalidCredentials
 		switch {
 		case errors.As(err, &invalidCredentials):
-			p.helpers.SendError(w, http.StatusNotFound, domain.Envelope{"error": "invalid credentials"}, err)
+			p.helpers.SendError(w, http.StatusNotFound, domain.Error{"credentials": "invalid credentials"}, err)
 		default:
 			p.helpers.SendServerError(w, err)
 		}

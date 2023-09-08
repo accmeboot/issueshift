@@ -42,9 +42,7 @@ func (p *Provider) CreateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ok := validator.Validate(DTO); !ok {
-		p.helpers.SendBadRequest(w, domain.Envelope{
-			"validation_errors": validator.Errors,
-		}, nil)
+		p.helpers.SendBadRequest(w, validator.Errors, nil)
 		return
 	}
 

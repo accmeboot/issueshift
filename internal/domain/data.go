@@ -9,6 +9,7 @@ type userKey string
 const UserKey = userKey("UserKey")
 
 type Envelope map[string]any
+type Error map[string]string
 
 type ErrNoRecord error
 type ErrAlreadyExists error
