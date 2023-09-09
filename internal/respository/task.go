@@ -24,7 +24,7 @@ func (p *Provider) CreateTask(title, description, status string, assignee int64)
 func (p *Provider) GetAllTasks(status string) ([]*domain.Task, error) {
 	var args []any
 	query := `
-			  SELECT tasks.title, tasks.description, tasks.created_at, tasks.updated_at, tasks.status, users.email
+			  SELECT tasks.id, tasks.title, tasks.description, tasks.created_at, tasks.updated_at, tasks.status, users.email
 			  FROM tasks INNER JOIN users
 			  ON tasks.assignee = users.id
 			 `
@@ -55,6 +55,7 @@ func (p *Provider) GetAllTasks(status string) ([]*domain.Task, error) {
 		var email string
 
 		err := rows.Scan(
+			&task.ID,
 			&task.Title,
 			&task.Description,
 			&task.CreatedAt,
