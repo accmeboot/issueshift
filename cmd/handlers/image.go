@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"github.com/accmeboot/issueshift/internal/domain"
 	"github.com/go-chi/chi/v5"
 	"log"
@@ -28,32 +29,23 @@ func (p *Provider) GetImage(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Content-Type", "image.ts/png")
 	if _, err = w.Write(image.ImageData); err != nil {
 		log.Println(err)
 	}
 }
 
 func (p *Provider) CreateImage(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseMultipartForm(32 << 20)
-	if err != nil {
-		p.helpers.SendUnprocessableEntity(w, err)
-		return
-	}
-	file, header, err := r.FormFile("image")
-	if err != nil {
-		p.helpers.SendBadRequest(w, domain.Error{"no_files": "no files have been provided in the filed image"}, err)
+	fileType := r.Header.Get("Content-Type")
+
+	if fileType != "image/png" && fileType != "image/jpeg" && fileType != "image.ts/svg" {
+		p.helpers.SendBadRequest(w, domain.Error{
+			"image": fmt.Sprintf("filetype: %s is not allowed", fileType),
+		}, nil)
 		return
 	}
 
-	defer func() {
-		err = file.Close()
-		if err != nil {
-			panic(err)
-		}
-	}()
-
-	id, err := p.service.CreateImage(&file, header.Filename)
+	id, err := p.service.CreateImage(r.Body)
 	if err != nil {
 		p.helpers.SendServerError(w, err)
 		return

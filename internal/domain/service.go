@@ -1,9 +1,9 @@
 package domain
 
-import "mime/multipart"
+import "io"
 
 type ServiceProvider interface {
-	CreateImage(file *multipart.File, fileName string) (int64, error)
+	CreateImage(file io.ReadCloser) (int64, error)
 	GetImage(id int64) (*Image, error)
 	CreateTask(title, description, status string, assignee int64) error
 	GetAllTasks(status string) ([]*Task, error)
