@@ -15,7 +15,7 @@ type RegisterUserDTO struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,password"`
 	Name     string `json:"name" validate:"required"`
-	AvatarID int64  `json:"avatar_id"`
+	AvatarID int64  `json:"avatarId"`
 }
 
 func (p *Provider) SignUp(w http.ResponseWriter, r *http.Request) {

@@ -29,7 +29,7 @@ func (p *Provider) GetImage(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	w.Header().Set("Content-Type", "image.ts/png")
+	w.Header().Set("Content-Type", "image/png")
 	if _, err = w.Write(image.ImageData); err != nil {
 		log.Println(err)
 	}
@@ -51,5 +51,5 @@ func (p *Provider) CreateImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p.helpers.Send(w, http.StatusCreated, domain.Envelope{"image_id": id})
+	p.helpers.Send(w, http.StatusCreated, domain.Envelope{"id": id})
 }

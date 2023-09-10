@@ -28,8 +28,8 @@ type Task struct {
 	ID          int64     `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 	Assignee    *User     `json:"assignee"`
 	Status      string    `json:"status"`
 }
@@ -46,6 +46,6 @@ type User struct {
 	Email        string    `json:"email"`
 	PasswordHash []byte    `json:"-"`
 	Name         string    `json:"name"`
-	CreatedAt    time.Time `json:"created_at"`
-	AvatarID     *int64    `json:"avatar_id"`
+	CreatedAt    time.Time `json:"createdAt"`
+	AvatarID     *int64    `json:"avatarId"`
 }
